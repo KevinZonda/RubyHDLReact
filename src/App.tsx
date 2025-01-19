@@ -3,7 +3,7 @@ import './App.css'
 import { useState } from 'react'
 
 function App() {
-  const [code, setCode] = useState('INCLUDE "prelude.rby". \n\n# Your code here...')
+  const [code, setCode] = useState('INCLUDE "prelude.rby". \n\n# Your code here...\ncurrent = VAR x . x $rel (`add` <x,x>).')
   const [input, setInput] = useState('')
   const [result, setResult] = useState('')
   const [taskId, setTaskId] = useState('')
