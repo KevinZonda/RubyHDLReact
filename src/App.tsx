@@ -14,7 +14,7 @@ function App() {
   }
 
   const updRst = (rst : string) => {
-    setResult(rst + '\n' + new Date().toLocaleString());
+    setResult(rst + '\nProduced at: ' + new Date().toLocaleString());
   }
 
   const handleCompile = async () => {
