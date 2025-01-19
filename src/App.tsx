@@ -19,7 +19,7 @@ function App() {
     setTaskId(response.task_id);
     setResult(response.rbs);
     if (response.compile_err) {
-      alert(response.compile_err);
+      // alert(response.compile_err);
       setOType('Compile Error:');
       setResult(response.compile_err);
       return false;
@@ -34,7 +34,7 @@ function App() {
     }
     const response = await api.run(taskId, input);
     if (response.error) {
-      alert(response.error);
+      // alert(response.error);
       setOType('Run Error:');
       setResult(response.error);
     }
