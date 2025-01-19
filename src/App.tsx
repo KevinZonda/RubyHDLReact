@@ -13,15 +13,19 @@ function App() {
     setTaskId('');
   }
 
+  const updRst = (rst : string) => {
+    setResult(rst + '\n' + new Date().toLocaleString());
+  }
+
   const handleCompile = async () => {
     const id = taskId ? taskId : undefined;
     const response = await api.compile(code, id);
     setTaskId(response.task_id);
-    setResult(response.rbs);
+    updRst(response.rbs);
     if (response.compile_err) {
       // alert(response.compile_err);
       setOType('Compile Error:');
-      setResult(response.compile_err);
+      updRst(response.compile_err);
       return false;
     }
     setOType('Compile Output:');
@@ -36,9 +40,9 @@ function App() {
     if (response.error) {
       // alert(response.error);
       setOType('Run Error:');
-      setResult(response.error);
+      updRst(response.error);
     }
-    setResult(response.output);
+    updRst(response.output);
     setOType('Run Output:');
   }
 
