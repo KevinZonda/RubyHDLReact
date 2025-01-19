@@ -19,7 +19,6 @@ textarea {
   margin-bottom: 20px;
   font-family: monospace;
   border: 1px solid #ccc;
-  border-radius: 4px;
 }
 
 .input-section {
@@ -31,7 +30,6 @@ textarea {
   height: 50px;
   font-family: monospace;
   border: 1px solid #ccc;
-  border-radius: 4px;
 }
 
 .button-group button {
