@@ -5,15 +5,28 @@ import './App.css'
 import { useState } from 'react'
 import { simpleMode } from '@codemirror/legacy-modes/mode/simple-mode';
 
+const defaultCode = 'INCLUDE "prelude.rby". \n\n# Your code here...\ncurrent = VAR x . x $rel (`add` <x,x>).'
+
 function App() {
-  const [code, setCode] = useState('INCLUDE "prelude.rby". \n\n# Your code here...\ncurrent = VAR x . x $rel (`add` <x,x>).')
+  const [code, setCode] = useState(localStorage.getItem('code') || defaultCode)
   const [input, setInput] = useState('')
   const [result, setResult] = useState('')
-  const [taskId, setTaskId] = useState('')
+  const [taskId, setTaskId] = useState(localStorage.getItem('taskId') || '')
   const [oType, setOType] = useState('')
 
   const handleClear = () => {
     setTaskId('');
+    localStorage.removeItem('taskId');
+    localStorage.removeItem('code');
+    setCode(defaultCode);
+    setInput('');
+    setResult('');
+    setOType('');
+  }
+
+  const updCode = (code : string) => {
+    setCode(code);
+    localStorage.setItem('code', code);
   }
 
   const updRst = (rst : string) => {
@@ -24,6 +37,8 @@ function App() {
     const id = taskId ? taskId : undefined;
     const response = await api.compile(code, id);
     setTaskId(response.task_id);
+    localStorage.setItem('taskId', response.task_id);
+
     updRst(response.rbs);
     if (response.compile_err) {
       // alert(response.compile_err);
@@ -63,7 +78,7 @@ function App() {
           Task ID: {taskId ? taskId : 'N/A'}
         </div>
         <div className="button-group">
-          <button className="btn-clear" onClick={handleClear}>🧹 Clear TID</button>
+          <button className="btn-clear" onClick={handleClear}>🧹 Clear</button>
           <button className="btn-build" onClick={handleCompile}>🛠️ Compile</button>
           <button className="btn-play" onClick={handleRun}>▶ Run</button>
         </div>
@@ -71,7 +86,7 @@ function App() {
       
       <ReactCodeMirror
         value={code}
-        onChange={(value) => setCode(value)}
+        onChange={(value) => updCode(value)}
         placeholder="Enter your code here..."
         extensions={[
           StreamLanguage.define(simpleMode({
