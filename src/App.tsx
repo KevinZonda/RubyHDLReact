@@ -1,6 +1,9 @@
+import ReactCodeMirror from '@uiw/react-codemirror'
+import { StreamLanguage } from '@codemirror/language';
 import { api } from './api'
 import './App.css'
 import { useState } from 'react'
+import { simpleMode } from '@codemirror/legacy-modes/mode/simple-mode';
 
 function App() {
   const [code, setCode] = useState('INCLUDE "prelude.rby". \n\n# Your code here...\ncurrent = VAR x . x $rel (`add` <x,x>).')
@@ -66,14 +69,49 @@ function App() {
         </div>
       </div>
       
-      <textarea
-        className="code-input"
+      <ReactCodeMirror
         value={code}
-        onChange={(e) => setCode(e.target.value)}
+        onChange={(value) => setCode(value)}
         placeholder="Enter your code here..."
+        extensions={[
+          StreamLanguage.define(simpleMode({
+            start: [
+              {
+                regex: /#(.*)/,
+                token: "comment"
+              },
+              {
+                regex: /VAR|INCLUDE/,
+                token: "keyword"
+              },
+              {
+                regex: /\$rel | \$wire /,
+                token: "keyword"
+              },
+              {
+                regex: /"(.*)"/,
+                token: "string"
+              },
+              {
+                regex: /`[^`]*`/,
+                token: "atom"
+              },
+              {
+                regex: /<[^>]*>/,
+                token: "number"
+              },
+              {
+                regex: /[0-9]+/,
+                token: "number"
+              }
+            ],
+          })),
+        ]}
+        height="300px"
+        basicSetup={{ lineNumbers: true, autocompletion: false, indentOnInput: false }}
       />
       
-      <div className="input-section">
+      <div className="input-section" style={{ marginTop: '10px' }}>
         <textarea
           className="input-box"
           value={input}
