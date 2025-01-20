@@ -152,7 +152,7 @@ function App() {
         color: '#666'
       }}>
         <p style={{ margin: 0 }}>Online Ruby Compiler &copy; 2025 KevinZonda. All rights reserved.</p>
-        <p style={{ margin: 0 }}>Imperial Ruby Compiler/Ruby DHL is a project that belongs to Imperial College London and its authors. Online Ruby Compiler (ORC) is an independent project created to facilitate working with Ruby DHL, and is not affiliated with Imperial College London.</p>
+        <p style={{ margin: 0 }}>Imperial Ruby Compiler/Ruby HDL is a project that belongs to Imperial College London and its authors. Online Ruby Compiler (ORC) is an independent project created to facilitate working with Ruby HDL, and is not affiliated with Imperial College London.</p>
       </footer>
     </div>
   )
