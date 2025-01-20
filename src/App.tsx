@@ -124,6 +124,9 @@ function App() {
         ]}
         height="300px"
         basicSetup={{ lineNumbers: true, autocompletion: false, indentOnInput: false }}
+        style={{
+          border: '1px solid #ccc',
+        }}
       />
       
       <div className="input-section" style={{ marginTop: '10px' }}>
@@ -131,7 +134,7 @@ function App() {
           className="input-box"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Enter input here..."
+          placeholder="Enter simulation (re) input here..."
         />
       </div>
       
