@@ -96,11 +96,11 @@ function App() {
                 token: "comment"
               },
               {
-                regex: /VAR|INCLUDE/,
+                regex: /VAR|INCLUDE|IF|THEN|ELSE|IN|END|LET/,
                 token: "keyword"
               },
               {
-                regex: /\$rel | \$wire /,
+                regex: /\$[a-zA-Z]*/,
                 token: "keyword"
               },
               {
