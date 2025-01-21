@@ -16,8 +16,9 @@ interface RunRequest {
 }
 
 interface RunResponse {
+    task_id: string;
     output: string;
-    error: string;
+    err: string;
 }
 
 export class _api {

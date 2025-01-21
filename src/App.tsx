@@ -15,13 +15,18 @@ function App() {
   const [oType, setOType] = useState('')
 
   const handleClear = () => {
-    setTaskId('');
+    updTaskId('');
     localStorage.removeItem('taskId');
     localStorage.removeItem('code');
-    setCode(defaultCode);
+    updCode(defaultCode);
     setInput('');
     setResult('');
     setOType('');
+  }
+
+  const updTaskId = (id : string) => {
+    setTaskId(id);
+    localStorage.setItem('taskId', id);
   }
 
   const updCode = (code : string) => {
@@ -36,29 +41,29 @@ function App() {
   const handleCompile = async () => {
     const id = taskId ? taskId : undefined;
     const response = await api.compile(code, id);
-    setTaskId(response.task_id);
-    localStorage.setItem('taskId', response.task_id);
+    updTaskId(response.task_id);
 
     updRst(response.rbs);
     if (response.compile_err) {
       // alert(response.compile_err);
       setOType('Compile Error:');
       updRst(response.compile_err);
-      return false;
+      return { success: false, response: response };
     }
     setOType('Compile Output:');
-    return true;
+    return { success: true, response: response };
   }
 
   const handleRun = async () => {
-    if (!await handleCompile()) {
-      return;
-    }
-    const response = await api.run(taskId, input);
-    if (response.error) {
-      // alert(response.error);
+    const compileResp = await handleCompile();
+    if (!compileResp.success) return;
+    const response = await api.run(compileResp.response.task_id, input);
+    if (response.err) {
       setOType('Run Error:');
-      updRst(response.error);
+      updRst(response.err);
+    }
+    if (response.task_id && response.task_id != '') {
+      updTaskId(response.task_id);
     }
     updRst(response.output);
     setOType('Run Output:');
