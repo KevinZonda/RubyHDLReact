@@ -1,5 +1,6 @@
-import ReactCodeMirror from '@uiw/react-codemirror'
+import ReactCodeMirror, { EditorView, keymap, EditorSelection } from '@uiw/react-codemirror'
 import { StreamLanguage } from '@codemirror/language';
+
 import { api } from './api'
 import './App.css'
 import { useState } from 'react'
@@ -38,6 +39,49 @@ function App() {
   const updCode = (code : string) => {
     setCode(code);
     localStorage.setItem('code', code);
+  }
+
+
+  const toggleHashComment = (view : EditorView) => {
+    const { state } = view;
+    const selection = state.selection.main;
+  
+    // Identify the first and last lines covered by the selection (or cursor)
+    const startLine = state.doc.lineAt(selection.from);
+    const endLine = state.doc.lineAt(selection.to);
+  
+    // Gather each relevant line
+    const lines = [];
+    for (let l = startLine.number; l <= endLine.number; l++) {
+      lines.push(state.doc.line(l));
+    }
+  
+    // Check whether every line is already commented
+    const allCommented = lines.every(line => line.text.trimStart().startsWith("#"));
+  
+    // Build the list of changes
+    const changes = lines.map(line => {
+      if (allCommented) {
+        // Remove the first "#" character in the line
+        const hashIndex = line.text.indexOf("#");
+        return {
+          from: line.from + hashIndex,
+          to: line.from + hashIndex + 1,
+          insert: ""
+        };
+      } else {
+        // Add a "#" at the beginning of the line
+        return {
+          from: line.from,
+          to: line.from,
+          insert: "#"
+        };
+      }
+    });
+  
+    // Apply the changes
+    view.dispatch({ changes });
+    return true;
   }
 
   const updRst = (rst : string) => {
@@ -85,14 +129,14 @@ function App() {
   }
 
   return (
-    <div className="code-editor-container" style={{ width: '100%' }}>
+    <div className="code-editor-container" style={{ width: '100%', height: '100%' }}>
       <h1>Imperial Ruby Compiler</h1>
       
       <div className="nav-bar" style={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        marginBottom: '10px'
+        marginBottom: '10px',
       }}>
         <div className="task-id">
           Task ID: {taskId ? taskId : 'N/A'}
@@ -142,8 +186,17 @@ function App() {
               }
             ],
           })),
+          keymap.of([{
+            key: "Mod-/",
+            run: (view) => toggleHashComment(view)
+          }]),
+          EditorView.theme({
+            ".cm-scroller": {
+              // overflow: "visible",
+            },
+          })
         ]}
-        height="300px"
+        height="auto"
         basicSetup={{ lineNumbers: true, autocompletion: false, indentOnInput: false }}
         style={{
           border: '1px solid #ccc',

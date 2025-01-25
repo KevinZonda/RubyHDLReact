@@ -30,6 +30,7 @@ textarea {
   height: 50px;
   font-family: monospace;
   border: 1px solid #ccc;
+  padding: 2px;
 }
 
 .button-group button {
