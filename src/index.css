@@ -3,4 +3,69 @@
 body {
   margin: 0;
   min-height: 100vh;
+  transition: background-color 0.5s ease;
 }
+
+/* Dark theme styles */
+.dark-theme {
+  background-color: #1e1e1e;
+  color: #e9e8e8;
+}
+
+.dark-theme button {
+  background-color: #2d2d2d;
+  color: #d8d7d7;
+  border: 1px solid #404040;
+}
+
+.dark-theme button:hover {
+  background-color: #404040;
+}
+
+.dark-theme .input-box {
+  background-color: #1e1e1e;
+  color: #d8d7d7;
+  border: 1px solid #333;
+}
+
+.dark-theme pre {
+  background-color: #2d2d2d;
+  color: #d8d7d7;
+}
+
+.dark-theme .result-section,
+.dark-theme .viz-section {
+  background-color: #2d2d2d;
+}
+
+.viz-section {
+  position: relative;
+}
+/* Common styles */
+button {
+  padding: 8px 16px;
+  margin: 0 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.input-box {
+  width: 100%;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+pre {
+  padding: 12px;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+.result-section,
+.viz-section {
+  margin-top: 20px;
+  padding: 12px;
+  border-radius: 4px;
+}
+
