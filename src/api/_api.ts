@@ -48,4 +48,15 @@ export class _api {
         });
         return await response.json() as RunResponse;
     }
+
+    async viz(taskId: string, input: string) {
+        const response = await fetch(`${this.baseUrl}/ruby/viz`, {
+            method: 'POST',
+            body: JSON.stringify({
+                task_id: taskId,
+                input: input,
+            } as RunRequest),
+        });
+        return await response.json() as RunResponse;
+    }
 }

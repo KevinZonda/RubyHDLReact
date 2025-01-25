@@ -65,6 +65,14 @@ textarea {
   background-color: #e53935;
 }
 
+.btn-viz {
+  background-color: #ff9800;
+}
+
+.btn-viz:hover {
+  background-color: #e58e00;
+}
+
 .result-section {
   background-color: #f5f5f5;
   padding: 15px;

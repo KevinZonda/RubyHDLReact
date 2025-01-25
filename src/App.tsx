@@ -4,6 +4,7 @@ import { api } from './api'
 import './App.css'
 import { useState } from 'react'
 import { simpleMode } from '@codemirror/legacy-modes/mode/simple-mode';
+import { Graphviz } from 'graphviz-react';
 
 const defaultCode = 'INCLUDE "prelude.rby". \n\n# Your code here...\ncurrent = VAR x . x $rel (`add` <x,x>).'
 
@@ -13,6 +14,7 @@ function App() {
   const [result, setResult] = useState('')
   const [taskId, setTaskId] = useState(localStorage.getItem('taskId') || '')
   const [oType, setOType] = useState('')
+  const [viz, setViz] = useState('');
 
   const handleClear = () => {
     updTaskId('');
@@ -54,6 +56,13 @@ function App() {
     return { success: true, response: response };
   }
 
+  const handleViz = async () => {
+    const compileResp = await handleCompile();
+    if (!compileResp.success) return;
+    const response = await api.viz(compileResp.response.task_id, input);
+    setViz(response.output);
+  }
+
   const handleRun = async () => {
     const compileResp = await handleCompile();
     if (!compileResp.success) return;
@@ -84,6 +93,7 @@ function App() {
         </div>
         <div className="button-group">
           <button className="btn-clear" onClick={handleClear}>🧹 Clear</button>
+          <button className="btn-viz" onClick={handleViz}>🎨 Viz</button>
           <button className="btn-build" onClick={handleCompile}>🛠️ Compile</button>
           <button className="btn-play" onClick={handleRun}>▶ Run</button>
         </div>
@@ -147,6 +157,13 @@ function App() {
         <div className="result-section">
           <h3 style={{ margin: 0, marginBottom: '10px' }}>{oType ? oType : 'Output:'}</h3>
           <pre>{result}</pre>
+        </div>
+      )}
+      
+      {viz && (
+        <div className="viz-section">
+          <h3 style={{ margin: 0, marginBottom: '10px' }}>Visualization:</h3>
+          <Graphviz dot={viz} options={{ width: '100%', height: 500 }} />
         </div>
       )}
       
