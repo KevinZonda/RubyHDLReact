@@ -162,7 +162,7 @@ function App() {
       
       {viz && (
         <div className="viz-section">
-          <h3 style={{ margin: 0, marginBottom: '10px' }}>Visualization:</h3>
+          <h3 style={{ margin: 0, marginBottom: '10px' }}>Visualization</h3>
           <Graphviz dot={viz} options={{ width: '100%', height: 500 }} />
         </div>
       )}
