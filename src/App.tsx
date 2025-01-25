@@ -26,6 +26,10 @@ function App() {
     setOType('');
   }
 
+  const initViz = () => {
+    setViz('');
+  }
+
   const updTaskId = (id : string) => {
     setTaskId(id);
     localStorage.setItem('taskId', id);
@@ -41,6 +45,7 @@ function App() {
   }
 
   const handleCompile = async () => {
+    initViz();
     const id = taskId ? taskId : undefined;
     const response = await api.compile(code, id);
     updTaskId(response.task_id);
@@ -64,6 +69,7 @@ function App() {
   }
 
   const handleRun = async () => {
+    initViz();
     const compileResp = await handleCompile();
     if (!compileResp.success) return;
     const response = await api.run(compileResp.response.task_id, input);
