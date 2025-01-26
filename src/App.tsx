@@ -1,6 +1,7 @@
 import ReactCodeMirror, { EditorView, keymap } from '@uiw/react-codemirror'
 import { StreamLanguage } from '@codemirror/language';
 import { MdOutlineNightlight, MdOutlineWbSunny } from 'react-icons/md';
+import { FaGithub } from 'react-icons/fa';
 
 import { api } from './api'
 import './App.css'
@@ -344,6 +345,26 @@ function App() {
         borderTop: '1px solid #ccc',
         textAlign: 'center'
       }}>
+        <p style={{ margin: 0 }}>
+          <a href="https://github.com/KevinZonda/RubyHDLReact" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              style={{ 
+                display: 'inline-flex', 
+                alignItems: 'center', 
+                gap: '5px',
+                color: 'inherit',
+                textDecoration: 'underline',
+                textDecorationStyle: 'dotted',
+                textUnderlineOffset: '4px',
+                transition: 'text-decoration-style 0.2s ease'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.textDecorationStyle = 'solid'}
+              onMouseOut={(e) => e.currentTarget.style.textDecorationStyle = 'dotted'}
+          >
+            <FaGithub /> View on GitHub KevinZonda/RubyHDLReact
+          </a>
+        </p>
         <p style={{ margin: 0 }}>Task UUID (Debug Only): {taskId ? taskId : 'N/A'}</p>
         <p style={{ margin: 0 }}>Online Ruby Compiler &copy; 2025 KevinZonda. All rights reserved.</p>
         <p style={{ margin: 0 }}>Imperial Ruby Compiler/Ruby HDL is a project that belongs to Imperial College London and its authors. Online Ruby Compiler (ORC) is an independent project created to facilitate working with Ruby HDL, and is not affiliated with Imperial College London.</p>
