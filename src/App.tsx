@@ -196,8 +196,8 @@ function App() {
       <h1>
         Imperial Ruby Compiler
         {
-          isDarkMode ? <MdOutlineWbSunny onClick={toggleTheme} style={{ fontSize: '0.6em', marginLeft: '5px', cursor: 'pointer', verticalAlign: 'top' }} />
-                      : <MdOutlineNightlight onClick={toggleTheme} style={{ fontSize: '0.6em', marginLeft: '5px', cursor: 'pointer', verticalAlign: 'top' }} />
+          isDarkMode ? <MdOutlineNightlight onClick={toggleTheme} style={{ fontSize: '0.6em', marginLeft: '5px', cursor: 'pointer', verticalAlign: 'top' }} />
+                      : <MdOutlineWbSunny onClick={toggleTheme} style={{ fontSize: '0.6em', marginLeft: '5px', cursor: 'pointer', verticalAlign: 'top' }} />
         }
       </h1>
       
