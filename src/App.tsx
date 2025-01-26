@@ -175,17 +175,40 @@ function App() {
     setIsRunning(false);
   }
 
-  const handleDownloadVizSVG = () => {
+  const getVizSVG = () => {
     const svgElement = document.querySelector('.viz-container svg');
     if (svgElement) {
       const svgData = new XMLSerializer().serializeToString(svgElement);
-      const blob = new Blob([svgData], { type: 'image/svg+xml' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'visualization.svg';
-      link.click();
-      URL.revokeObjectURL(url);
+      return svgData;
+    }
+    return undefined;
+  }
+
+  const handleDownloadVizSVG = () => {
+    const svgData = getVizSVG();
+    if (!svgData) return;
+    const blob = new Blob([svgData], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'visualization.svg';
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  const handleNewVizSVGPage = () => {
+    const svgData = getVizSVG();
+    if (!svgData) return;
+    const newWindow = window.open('', '_blank');
+    if (newWindow) {
+      const parser = new DOMParser();
+      const svgDoc = parser.parseFromString(svgData, 'image/svg+xml');
+      const svgElement = svgDoc.querySelector('svg');
+      if (svgElement) {
+        svgElement.setAttribute('height', '100%');
+      }
+      newWindow.document.body.innerHTML = svgElement?.outerHTML || svgData;
+      newWindow.document.title = 'Circuit Visualization';
     }
   }
 
@@ -298,7 +321,9 @@ function App() {
         <div className="viz-section">
           <div className="viz-container" onMouseOver={() => setDisplayVisDownload(true)} onMouseLeave={() => setDisplayVisDownload(false)}>
             <h3 style={{ margin: 0, marginBottom: '10px' }}>Visualization</h3>
-            <Graphviz dot={viz} options={{ width: '100%', height: 500 }} />
+            <div onClick={handleNewVizSVGPage}>
+              <Graphviz dot={viz} options={{ width: '100%', height: 500 }} />
+            </div>
             <div className="button-group download-viz" style={{ display: displayVisDownload ? 'flex' : 'none' }}>
               <button className="btn-viz-download-svg" onClick={handleDownloadVizSVG}>💾 SVG</button>
               <button className="btn-viz-download-dot" onClick={handleDownloadVizDot}>📄 DOT</button>
