@@ -263,7 +263,7 @@ function App() {
                 token: "number"
               },
               {
-                regex: /[0-9]+/,
+                regex: /\b[0-9]+\b/,
                 token: "number"
               }
             ],
