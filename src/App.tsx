@@ -1,4 +1,4 @@
-import ReactCodeMirror, { EditorView, keymap, EditorSelection } from '@uiw/react-codemirror'
+import ReactCodeMirror, { EditorView, keymap } from '@uiw/react-codemirror'
 import { StreamLanguage } from '@codemirror/language';
 
 import { api } from './api'
@@ -144,7 +144,7 @@ function App() {
   const handleRun = async () => {
     setIsRunning(true);
     initViz();
-    const compileResp = await handleCompile(false, false);
+    const compileResp = await handleCompile(false);
     if (!compileResp.success) {
       setIsRunning(false);
       return;
