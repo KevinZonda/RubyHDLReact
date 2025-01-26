@@ -31,6 +31,18 @@ function App() {
     }
   }, [isDarkMode]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault(); 
+        handleDownloadCode();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const handleClear = () => {
     updTaskId('');
     localStorage.removeItem('taskId');
@@ -189,11 +201,12 @@ function App() {
     element.href = `data:text/plain;charset=utf-8,${encodeURIComponent(code)}`;
     element.download = "current.rby";
     element.click();
+    return true;
   }
 
   return (
     <div className="code-editor-container" style={{ width: '100%', height: '100%' }}>
-      <h1>
+      <h1 style={{ marginBottom: 0 }}>
         Imperial Ruby Compiler
         {
           isDarkMode ? <MdOutlineNightlight onClick={toggleTheme} style={{ fontSize: '0.6em', marginLeft: '5px', cursor: 'pointer', verticalAlign: 'top' }} />
@@ -208,16 +221,12 @@ function App() {
         alignItems: 'center',
         marginBottom: '10px',
       }}>
-        <div className="task-id">
-          Task ID: {taskId ? taskId : 'N/A'}
-        </div>
-        <div className="divider"></div>
         <div className="button-group">
           <button className="btn-clear" onClick={handleClear}>🧹 Clear</button>
           <button className="btn-viz" onClick={handleViz}>{isVizing ? '🎨 Viz...' : '🎨 Viz'}</button>
           <button className="btn-build" onClick={() => handleCompile(true)}>{isCompiling ? '🛠️ Compiling...' : '🛠️ Compile'}</button>
           <button className="btn-play" onClick={handleRun}>{isRunning ? '▶ Running...' : '▶ Run'}</button>
-          <button className="btn-download" onClick={handleDownloadCode}>📄 Download</button>
+          {/* <button className="btn-download" onClick={handleDownloadCode}>📄 Download</button> */}
         </div>
       </div>
       
@@ -310,6 +319,7 @@ function App() {
         borderTop: '1px solid #ccc',
         textAlign: 'center'
       }}>
+        <p style={{ margin: 0 }}>Task UUID (Debug Only): {taskId ? taskId : 'N/A'}</p>
         <p style={{ margin: 0 }}>Online Ruby Compiler &copy; 2025 KevinZonda. All rights reserved.</p>
         <p style={{ margin: 0 }}>Imperial Ruby Compiler/Ruby HDL is a project that belongs to Imperial College London and its authors. Online Ruby Compiler (ORC) is an independent project created to facilitate working with Ruby HDL, and is not affiliated with Imperial College London.</p>
       </footer>

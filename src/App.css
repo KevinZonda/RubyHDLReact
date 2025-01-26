@@ -52,7 +52,7 @@ textarea {
   height: 50px;
   font-family: monospace;
   border: 1px solid #ccc;
-  padding: 2px;
+  padding: 0px;
   transition: var(--transition);
 }
 
