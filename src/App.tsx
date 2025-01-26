@@ -1,5 +1,6 @@
 import ReactCodeMirror, { EditorView, keymap } from '@uiw/react-codemirror'
 import { StreamLanguage } from '@codemirror/language';
+import { MdOutlineNightlight, MdOutlineWbSunny } from 'react-icons/md';
 
 import { api } from './api'
 import './App.css'
@@ -192,7 +193,13 @@ function App() {
 
   return (
     <div className="code-editor-container" style={{ width: '100%', height: '100%' }}>
-      <h1>Imperial Ruby Compiler</h1>
+      <h1>
+        Imperial Ruby Compiler
+        {
+          isDarkMode ? <MdOutlineWbSunny onClick={toggleTheme} style={{ fontSize: '0.6em', marginLeft: '5px', cursor: 'pointer', verticalAlign: 'top' }} />
+                      : <MdOutlineNightlight onClick={toggleTheme} style={{ fontSize: '0.6em', marginLeft: '5px', cursor: 'pointer', verticalAlign: 'top' }} />
+        }
+      </h1>
       
       <div className="nav-bar" style={{
         display: 'flex',
@@ -206,9 +213,6 @@ function App() {
         </div>
         <div className="divider"></div>
         <div className="button-group">
-          <button className="btn-theme" onClick={toggleTheme}>
-            {isDarkMode ? '☀️' : '🌙'} {isDarkMode ? 'Light' : 'Dark'}
-          </button>
           <button className="btn-clear" onClick={handleClear}>🧹 Clear</button>
           <button className="btn-viz" onClick={handleViz}>{isVizing ? '🎨 Viz...' : '🎨 Viz'}</button>
           <button className="btn-build" onClick={() => handleCompile(true)}>{isCompiling ? '🛠️ Compiling...' : '🛠️ Compile'}</button>
