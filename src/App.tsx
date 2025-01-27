@@ -185,6 +185,17 @@ function App() {
     return undefined;
   }
 
+  const swapViz = () => {
+    if (!viz) return;
+    if (viz.startsWith('digraph circuit {\n\trankdir=LR;\n')) {
+      const newViz = viz.replace('digraph circuit {\n\trankdir=LR;\n', 'digraph circuit {\n');
+      setViz(newViz);
+    } else {
+      const newViz = viz.replace('digraph circuit {\n', 'digraph circuit {\n\trankdir=LR;\n');
+      setViz(newViz);
+    }
+  }
+
   const handleDownloadVizSVG = () => {
     const svgData = getVizSVG();
     if (!svgData) return;
@@ -321,11 +332,13 @@ function App() {
       {viz && (
         <div className="viz-section">
           <div className="viz-container" onMouseOver={() => setDisplayVisDownload(true)} onMouseLeave={() => setDisplayVisDownload(false)}>
-            <h3 style={{ margin: 0, marginBottom: '10px' }}>Visualization</h3>
+            <h3 style={{ margin: 0, marginBottom: '10px' }}>Visualisation</h3>
             <div onClick={handleNewVizSVGPage} style={{ cursor: 'pointer' }}>
               <Graphviz dot={viz} options={{ width: '100%', height: 500 }} />
             </div>
             <div className="button-group download-viz" style={{ display: displayVisDownload ? 'flex' : 'none' }}>
+              <button className='btn-viz-new-page' onClick={handleNewVizSVGPage}>🔍 Zoom</button>
+              <button className="btn-viz-swap" onClick={swapViz}>🔄 Swap</button>
               <button className="btn-viz-download-svg" onClick={handleDownloadVizSVG}>💾 SVG</button>
               <button className="btn-viz-download-dot" onClick={handleDownloadVizDot}>📄 DOT</button>
             </div>
