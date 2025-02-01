@@ -171,7 +171,7 @@ export const App = observer(() => {
       </div>
 
       {CodeStore.viz && (
-        <div className="viz-section">
+        <div className="viz-section" style={{ padding: isDarkMode ? '15px' : '0px' }}>
           <div className="viz-container" onMouseOver={() => setDisplayVisDownload(true)} onMouseLeave={() => setDisplayVisDownload(false)}>
             <h3 style={{ margin: 0, marginBottom: '10px' }}>Visualisation</h3>
             <div onClick={handleNewVizSVGPage} style={{ cursor: 'pointer' }}>
