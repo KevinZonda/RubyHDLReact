@@ -76,8 +76,13 @@ export const handleHashComment = (view: EditorView) => {
 }
 
 export const downloadTextAsFile = (text: string, filename: string) => {
+    downloadHrefAsFile(`data:text/plain;charset=utf-8,${encodeURIComponent(text)}`, filename);
+}
+
+
+export const downloadHrefAsFile = (href: string, filename: string) => {
     const element = document.createElement("a");
-    element.href = `data:text/plain;charset=utf-8,${encodeURIComponent(text)}`;
+    element.href = href;
     element.download = filename;
     element.click();
 }

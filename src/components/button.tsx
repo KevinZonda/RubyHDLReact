@@ -6,7 +6,7 @@ interface ButtonProps<T = void> {
     className?: string;
 }
 
-export const RunableButton = <T = void>({ text, onClick, className }: ButtonProps<T>) => {
+export const RunnableButton = <T = void>({ text, onClick, className }: ButtonProps<T>) => {
     const [isLoading, setIsLoading] = useState(false);
 
     const handleClick = async () => {

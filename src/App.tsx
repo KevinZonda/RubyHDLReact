@@ -9,8 +9,8 @@ import { simpleMode } from '@codemirror/legacy-modes/mode/simple-mode';
 import { Graphviz } from 'graphviz-react';
 import { observer } from 'mobx-react-lite';
 import { CodeStore } from './store';
-import { downloadTextAsFile, handleHashComment, RubyGrammarHighlight } from './grammar';
-import { RunableButton } from './components/button';
+import { downloadHrefAsFile, downloadTextAsFile, handleHashComment, RubyGrammarHighlight } from './grammar';
+import { RunnableButton } from './components/button';
 import { DarkModeIndicator } from './components/darkmode';
 
 export const App = observer(() => {
@@ -100,10 +100,7 @@ export const App = observer(() => {
     if (!svgData) return;
     const blob = new Blob([svgData], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'visualization.svg';
-    link.click();
+    downloadHrefAsFile(url, 'visualization.svg');
     URL.revokeObjectURL(url);
   }
 
@@ -137,10 +134,10 @@ export const App = observer(() => {
       }}>
         <div className="button-group">
 
-          <RunableButton className="btn-clear" onClick={() => CodeStore.resetAll()} text={'🧹 Clear'} />
-          <RunableButton className="btn-viz" onClick={handleViz} text={'🎨 Viz'} />
-          <RunableButton className="btn-build" onClick={() => handleCompile()} text={'🛠️ Compile'} />
-          <RunableButton className="btn-play" onClick={handleRun} text="▶ Run" />
+          <RunnableButton className="btn-clear" onClick={() => CodeStore.resetAll()} text={'🧹 Clear'} />
+          <RunnableButton className="btn-viz" onClick={handleViz} text={'🎨 Viz'} />
+          <RunnableButton className="btn-build" onClick={() => handleCompile()} text={'🛠️ Compile'} />
+          <RunnableButton className="btn-play" onClick={handleRun} text="▶ Run" />
           {/* <button className="btn-download" onClick={handleDownloadCode}>📄 Download</button> */}
         </div>
       </div>
