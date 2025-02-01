@@ -1,6 +1,5 @@
-import ReactCodeMirror, { EditorView, keymap } from '@uiw/react-codemirror'
+import ReactCodeMirror, { keymap } from '@uiw/react-codemirror'
 import { StreamLanguage } from '@codemirror/language';
-import { MdOutlineNightlight, MdOutlineWbSunny } from 'react-icons/md';
 import { FaGithub } from 'react-icons/fa';
 
 import { api } from './api'
@@ -8,20 +7,14 @@ import './App.css'
 import { useEffect, useState } from 'react'
 import { simpleMode } from '@codemirror/legacy-modes/mode/simple-mode';
 import { Graphviz } from 'graphviz-react';
+import { observer } from 'mobx-react-lite';
+import { CodeStore } from './store';
+import { downloadTextAsFile, handleHashComment, RubyGrammarHighlight } from './grammar';
+import { RunableButton } from './components/button';
+import { DarkModeIndicator } from './components/darkmode';
 
-const defaultCode = 'INCLUDE "prelude.rby". \n\n# Your code here...\ncurrent = VAR x . x $rel (`add` <x,x>).'
-
-function App() {
-  const [code, setCode] = useState(localStorage.getItem('code') || defaultCode)
-  const [input, setInput] = useState('')
-  const [result, setResult] = useState('')
-  const [taskId, setTaskId] = useState(localStorage.getItem('taskId') || '')
-  const [oType, setOType] = useState('')
-  const [viz, setViz] = useState('');
+export const App = observer(() => {
   const [isDarkMode, setIsDarkMode] = useState(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-  const [isCompiling, setIsCompiling] = useState(false);
-  const [isVizing, setIsVizing] = useState(false);
-  const [isRunning, setIsRunning] = useState(false);
   const [displayVisDownload, setDisplayVisDownload] = useState(false);
 
   useEffect(() => {
@@ -35,8 +28,8 @@ function App() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-        e.preventDefault(); 
-        handleDownloadCode();
+        e.preventDefault();
+        downloadTextAsFile(CodeStore.code, "current.rby");
       }
     };
 
@@ -44,156 +37,62 @@ function App() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const handleClear = () => {
-    updTaskId('');
-    localStorage.removeItem('taskId');
-    localStorage.removeItem('code');
-    updCode(defaultCode);
-    setInput('');
-    setResult('');
-    setOType('');
-  }
-
-  const initViz = () => {
-    setViz('');
-  }
-
-  const updTaskId = (id : string) => {
-    setTaskId(id);
-    localStorage.setItem('taskId', id);
-  }
-
-  const updCode = (code : string) => {
-    setCode(code);
-    localStorage.setItem('code', code);
-  }
-
   const toggleTheme = () => {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
-    // localStorage.setItem('theme', newMode ? 'dark' : 'light');
     document.documentElement.classList.toggle('dark-theme');
   };
 
-  const toggleHashComment = (view : EditorView) => {
-    const { state } = view;
-    const selection = state.selection.main;
-  
-    // Identify the first and last lines covered by the selection (or cursor)
-    const startLine = state.doc.lineAt(selection.from);
-    const endLine = state.doc.lineAt(selection.to);
-  
-    // Gather each relevant line
-    const lines = [];
-    for (let l = startLine.number; l <= endLine.number; l++) {
-      lines.push(state.doc.line(l));
-    }
-  
-    // Check whether every line is already commented
-    const allCommented = lines.every(line => line.text.trimStart().startsWith("#"));
-  
-    // Build the list of changes
-    const changes = lines.map(line => {
-      if (allCommented) {
-        // Remove the first "#" character in the line
-        const hashIndex = line.text.indexOf("#");
-        return {
-          from: line.from + hashIndex,
-          to: line.from + hashIndex + 1,
-          insert: ""
-        };
-      } else {
-        // Add a "#" at the beginning of the line
-        return {
-          from: line.from,
-          to: line.from,
-          insert: "#"
-        };
-      }
-    });
-  
-    // Apply the changes
-    view.dispatch({ changes });
-    return true;
-  }
-
-  const updRst = (rst : string) => {
-    setResult(rst + '\nProduced at: ' + new Date().toLocaleString());
-  }
-
-  const handleCompile = async (needloading: boolean = true) => {
-    if (needloading) {
-      setIsCompiling(true);
-    }
-    initViz();
-    const id = taskId ? taskId : undefined;
-    const response = await api.compile(code, id);
-    updTaskId(response.task_id);
-    updRst(response.rbs);
+  const handleCompile = async (notDisplayLoading: boolean = false) => {
+    CodeStore.viz = '';
+    const id = CodeStore.taskId ? CodeStore.taskId : undefined;
+    const response = await api.compile(CodeStore.code, id);
+    CodeStore.taskId = response.task_id;
     if (response.compile_err) {
       // alert(response.compile_err);
-      setOType('Compile Error:');
-      updRst(response.compile_err);
-      if (needloading) {
-        setIsCompiling(false);
-      }
+      CodeStore.oType = 'Compile Error:';
+      CodeStore.setResultWithTimestamp(response.compile_err);
       return { success: false, response: response };
     }
-    setOType('Compile Output:');
-    if (needloading) {
-      setIsCompiling(false);
+
+    if (!notDisplayLoading) {
+      CodeStore.setResultWithTimestamp(response.rbs);
+      CodeStore.oType = 'Compile Output:';
     }
     return { success: true, response: response };
   }
 
   const handleViz = async () => {
-    setIsVizing(true);
-    const compileResp = await handleCompile(false);
+    const compileResp = await handleCompile();
     if (!compileResp.success) return;
-    const response = await api.viz(compileResp.response.task_id, input);
-    setViz(response.output);
-    setIsVizing(false);
+    const response = await api.viz(compileResp.response.task_id, CodeStore.input);
+    CodeStore.viz = response.output;
   }
 
   const handleRun = async () => {
-    setIsRunning(true);
-    initViz();
-    const compileResp = await handleCompile(false);
-    if (!compileResp.success) {
-      setIsRunning(false);
+    CodeStore.viz = '';
+
+    const compileResp = await handleCompile(true);
+    if (!compileResp.success) return;
+    const response = await api.run(compileResp.response.task_id, CodeStore.input);
+    if (response.task_id && response.task_id != '') {
+      CodeStore.taskId = response.task_id;
+    }
+
+    if (response.err) {
+      CodeStore.oType = 'Run Error:';
+      CodeStore.setResultWithTimestamp(response.err);
       return;
     }
-    const response = await api.run(compileResp.response.task_id, input);
-    if (response.err) {
-      setOType('Run Error:');
-      updRst(response.err);
-    }
-    if (response.task_id && response.task_id != '') {
-      updTaskId(response.task_id);
-    }
-    updRst(response.output);
-    setOType('Run Output:');
-    setIsRunning(false);
+
+    CodeStore.setResultWithTimestamp(response.output);
+    CodeStore.oType = 'Run Output:';
   }
 
   const getVizSVG = () => {
     const svgElement = document.querySelector('.viz-container svg');
-    if (svgElement) {
-      const svgData = new XMLSerializer().serializeToString(svgElement);
-      return svgData;
-    }
-    return undefined;
-  }
-
-  const swapViz = () => {
-    if (!viz) return;
-    if (viz.startsWith('digraph circuit {\n\trankdir=LR;\n')) {
-      const newViz = viz.replace('digraph circuit {\n\trankdir=LR;\n', 'digraph circuit {\n');
-      setViz(newViz);
-    } else {
-      const newViz = viz.replace('digraph circuit {\n', 'digraph circuit {\n\trankdir=LR;\n');
-      setViz(newViz);
-    }
+    if (!svgElement) return undefined;
+    return new XMLSerializer().serializeToString(svgElement);
   }
 
   const handleDownloadVizSVG = () => {
@@ -212,106 +111,51 @@ function App() {
     const svgData = getVizSVG();
     if (!svgData) return;
     const newWindow = window.open('', '_blank');
-    if (newWindow) {
-      const parser = new DOMParser();
-      const svgDoc = parser.parseFromString(svgData, 'image/svg+xml');
-      const svgElement = svgDoc.querySelector('svg');
-      if (svgElement) {
-        svgElement.setAttribute('height', '100%');
-      }
-      newWindow.document.body.innerHTML = svgElement?.outerHTML || svgData;
-      newWindow.document.title = 'Circuit Visualization';
+    if (!newWindow) return;
+    const parser = new DOMParser();
+    const svgDoc = parser.parseFromString(svgData, 'image/svg+xml');
+    const svgElement = svgDoc.querySelector('svg');
+    if (svgElement) {
+      svgElement.setAttribute('height', '100%');
     }
-  }
-
-  const handleDownloadVizDot = () => {
-    const element = document.createElement("a");
-    element.href = `data:text/plain;charset=utf-8,${encodeURIComponent(viz)}`;
-    element.download = "visualization.dot";
-    element.click();
-  }
-
-  const handleDownloadCode = () => {
-    const element = document.createElement("a");
-    element.href = `data:text/plain;charset=utf-8,${encodeURIComponent(code)}`;
-    element.download = "current.rby";
-    element.click();
-    return true;
+    newWindow.document.body.innerHTML = svgElement?.outerHTML || svgData;
+    newWindow.document.title = 'Circuit Visualization';
   }
 
   return (
     <div className="code-editor-container" style={{ width: '100%', height: '100%' }}>
       <h1 style={{ marginBottom: 0 }}>
         Imperial Ruby Compiler
-        {
-          isDarkMode ? <MdOutlineNightlight onClick={toggleTheme} style={{ fontSize: '0.6em', marginLeft: '5px', cursor: 'pointer', verticalAlign: 'top' }} />
-                      : <MdOutlineWbSunny onClick={toggleTheme} style={{ fontSize: '0.6em', marginLeft: '5px', cursor: 'pointer', verticalAlign: 'top' }} />
-        }
+        <DarkModeIndicator toggleTheme={toggleTheme} isDarkMode={isDarkMode} />
       </h1>
-      
       <div className="nav-bar" style={{
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'space-between', 
+        justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: '10px',
       }}>
         <div className="button-group">
-          <button className="btn-clear" onClick={handleClear}>🧹 Clear</button>
-          <button className="btn-viz" onClick={handleViz}>{isVizing ? '🎨 Viz...' : '🎨 Viz'}</button>
-          <button className="btn-build" onClick={() => handleCompile(true)}>{isCompiling ? '🛠️ Compiling...' : '🛠️ Compile'}</button>
-          <button className="btn-play" onClick={handleRun}>{isRunning ? '▶ Running...' : '▶ Run'}</button>
+
+          <RunableButton className="btn-clear" onClick={() => CodeStore.resetAll()} text={'🧹 Clear'} />
+          <RunableButton className="btn-viz" onClick={handleViz} text={'🎨 Viz'} />
+          <RunableButton className="btn-build" onClick={() => handleCompile()} text={'🛠️ Compile'} />
+          <RunableButton className="btn-play" onClick={handleRun} text="▶ Run" />
           {/* <button className="btn-download" onClick={handleDownloadCode}>📄 Download</button> */}
         </div>
       </div>
-      
+
       <ReactCodeMirror
-        value={code}
-        onChange={(value) => updCode(value)}
+        value={CodeStore.code}
+        onChange={(value) => CodeStore.code = value}
         placeholder="Enter your code here..."
         theme={isDarkMode ? 'dark' : 'light'}
         extensions={[
-          StreamLanguage.define(simpleMode({
-            start: [
-              {
-                regex: /#(.*)/,
-                token: "comment"
-              },
-              {
-                regex: /VAR|INCLUDE|IF|THEN|ELSE|IN|END|LET/,
-                token: "keyword"
-              },
-              {
-                regex: /\$[a-zA-Z]*/,
-                token: "keyword"
-              },
-              {
-                regex: /"(.*)"/,
-                token: "string"
-              },
-              {
-                regex: /`[^`]*`/,
-                token: "atom"
-              },
-              {
-                regex: /<[^>]*>/,
-                token: "number"
-              },
-              {
-                regex: /\b[0-9]+\b/,
-                token: "number"
-              }
-            ],
-          })),
+          StreamLanguage.define(simpleMode(RubyGrammarHighlight)),
           keymap.of([{
             key: "Mod-/",
-            run: (view) => toggleHashComment(view)
-          }]),
-          EditorView.theme({
-            ".cm-scroller": {
-              // overflow: "visible",
-            },
-          })
+            run: (view) => handleHashComment(view)
+          }])
         ]}
         height="auto"
         basicSetup={{ lineNumbers: true, autocompletion: false, indentOnInput: false }}
@@ -319,71 +163,69 @@ function App() {
           border: '1px solid #ccc',
         }}
       />
-      
+
       <div className="input-section" style={{ marginTop: '10px' }}>
         <textarea
           className="input-box"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
+          value={CodeStore.input}
+          onChange={(e) => CodeStore.input = e.target.value}
           placeholder="Enter simulation (re) input here..."
         />
       </div>
 
-      {viz && (
+      {CodeStore.viz && (
         <div className="viz-section">
           <div className="viz-container" onMouseOver={() => setDisplayVisDownload(true)} onMouseLeave={() => setDisplayVisDownload(false)}>
             <h3 style={{ margin: 0, marginBottom: '10px' }}>Visualisation</h3>
             <div onClick={handleNewVizSVGPage} style={{ cursor: 'pointer' }}>
-              <Graphviz dot={viz} options={{ width: '100%', height: 500 }} />
+              <Graphviz dot={CodeStore.viz} options={{ width: '100%', height: 500 }} />
             </div>
             <div className="button-group download-viz" style={{ display: displayVisDownload ? 'flex' : 'none' }}>
-              <button className='btn-viz-new-page' onClick={handleNewVizSVGPage}>🔍 Zoom</button>
-              <button className="btn-viz-swap" onClick={swapViz}>🔄 Swap</button>
-              <button className="btn-viz-download-svg" onClick={handleDownloadVizSVG}>💾 SVG</button>
-              <button className="btn-viz-download-dot" onClick={handleDownloadVizDot}>📄 DOT</button>
+              <button onClick={handleNewVizSVGPage}>🔍 Zoom</button>
+              <button onClick={() => CodeStore.vizRotate()}>🔄 Rotate</button>
+              <button onClick={handleDownloadVizSVG}>💾 SVG</button>
+              <button onClick={() => downloadTextAsFile(CodeStore.viz, "visualization.dot")}>📄 DOT</button>
             </div>
           </div>
         </div>
       )}
-      
-      {result && (
+
+      {CodeStore.result && (
         <div className="result-section">
-          <h3 style={{ margin: 0, marginBottom: '10px' }}>{oType ? oType : 'Output:'}</h3>
-          <pre>{result}</pre>
+          <h3 style={{ margin: 0, marginBottom: '10px' }}>{CodeStore.oType}</h3>
+          <pre>{CodeStore.result}</pre>
         </div>
       )}
-      
+
       <footer style={{
         padding: '10px',
         borderTop: '1px solid #ccc',
         textAlign: 'center'
       }}>
         <p style={{ margin: 0 }}>
-          <a href="https://github.com/KevinZonda/RubyHDLReact" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              style={{ 
-                display: 'inline-flex', 
-                alignItems: 'center', 
-                gap: '5px',
-                color: 'inherit',
-                textDecoration: 'underline',
-                textDecorationStyle: 'dotted',
-                textUnderlineOffset: '4px',
-                transition: 'text-decoration-style 0.2s ease'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.textDecorationStyle = 'solid'}
-              onMouseOut={(e) => e.currentTarget.style.textDecorationStyle = 'dotted'}
+          <a href="https://github.com/KevinZonda/RubyHDLReact"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              color: 'inherit',
+              textDecoration: 'underline',
+              textDecorationStyle: 'dotted',
+              textUnderlineOffset: '4px',
+              transition: 'text-decoration-style 0.2s ease'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.textDecorationStyle = 'solid'}
+            onMouseOut={(e) => e.currentTarget.style.textDecorationStyle = 'dotted'}
           >
             <FaGithub /> View on GitHub KevinZonda/RubyHDLReact
           </a>
         </p>
-        <p style={{ margin: 0 }}>Task UUID (Debug Only): {taskId ? taskId : 'N/A'}</p>
+        <p style={{ margin: 0 }}>Task UUID (Debug Only): {CodeStore.taskId ? CodeStore.taskId : 'N/A'}</p>
         <p style={{ margin: 0 }}>Online Ruby Compiler &copy; 2025 KevinZonda. All rights reserved.</p>
         <p style={{ margin: 0 }}>Imperial Ruby Compiler/Ruby HDL is a project that belongs to Imperial College London and its authors. Online Ruby Compiler (ORC) is an independent project created to facilitate working with Ruby HDL, and is not affiliated with Imperial College London.</p>
       </footer>
     </div>
   )
-}
-
-export default App
+})
